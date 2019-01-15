@@ -1,0 +1,150 @@
+%% Right第一层顺时针旋转90度
+function [MF]=Right_1(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第一层的四个列向量封在一个矩阵里
+MF_row_1=[MF_F(:,3),  MF_U(:,3),  MF_B(:,3),  MF_D(:,3)]; 
+%% Right面的旋转
+MF_R=rot90(MF_R,-1);
+%% Right面的旋转带动了四个侧面矩阵的变化 
+MF_row_1(:,[3,4])=MF_row_1(:,[4,3]);
+MF_row_1(:,[2,3])=MF_row_1(:,[3,2]);
+MF_row_1(:,[1,2])=MF_row_1(:,[2,1]);
+%% 将侧面的矩阵进行更新
+MF_F(:,3)=MF_row_1(:,1);
+MF_U(:,3)=MF_row_1(:,2);
+MF_B(:,3)=MF_row_1(:,3);
+MF_D(:,3)=MF_row_1(:,4);
+%%
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+%% Right第一层逆时针旋转90度
+function [MF]=Right_1_N(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第一层的四个行向量封在一个矩阵里
+MF_row_1=[MF_F(:,3),  MF_U(:,3),  MF_B(:,3),  MF_D(:,3)]; 
+%% Right面的旋转
+MF_R=rot90(MF_R,1);
+%% Right面的旋转带动了四个侧面矩阵的变化 
+
+MF_row_1(:,[1,2])=MF_row_1(:,[2,1]);
+MF_row_1(:,[2,3])=MF_row_1(:,[3,2]);
+MF_row_1(:,[3,4])=MF_row_1(:,[4,3]);
+
+
+%% 将侧面的矩阵进行更新
+MF_F(:,3)=MF_row_1(:,1);
+MF_U(:,3)=MF_row_1(:,2);
+MF_B(:,3)=MF_row_1(:,3);
+MF_D(:,3)=MF_row_1(:,4);
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+
+end
+
+%% LEFT第一层逆时针旋转90度
+function [MF]=Left_1_N(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第一层的四个列向量封在一个矩阵里
+MF_row_1=[MF_F(:,1),  MF_U(:,1),  MF_B(:,1),  MF_D(:,1)]; 
+%% Right面的旋转
+MF_L=rot90(MF_L,1);
+%% Right面的旋转带动了四个侧面矩阵的变化 
+MF_row_1(:,[3,4])=MF_row_1(:,[4,3]);
+MF_row_1(:,[2,3])=MF_row_1(:,[3,2]);
+MF_row_1(:,[1,2])=MF_row_1(:,[2,1]);
+%% 将侧面的矩阵进行更新
+MF_F(:,1)=MF_row_1(:,1);
+MF_U(:,1)=MF_row_1(:,2);
+MF_B(:,1)=MF_row_1(:,3);
+MF_D(:,1)=MF_row_1(:,4);
+%%
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+
+%% LEFT第一层顺时针旋转90度
+function [MF]=Left_1(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第一层的四个列向量封在一个矩阵里
+MF_row_1=[MF_F(:,1),  MF_U(:,1),  MF_B(:,1),  MF_D(:,1)]; 
+%% Right面的旋转
+MF_L=rot90(MF_L,-1);
+%% Right面的旋转带动了四个侧面矩阵的变化 
+MF_row_1(:,[1,2])=MF_row_1(:,[2,1]);
+MF_row_1(:,[2,3])=MF_row_1(:,[3,2]);
+MF_row_1(:,[3,4])=MF_row_1(:,[4,3]);
+%% 将侧面的矩阵进行更新
+MF_F(:,1)=MF_row_1(:,1);
+MF_U(:,1)=MF_row_1(:,2);
+MF_B(:,1)=MF_row_1(:,3);
+MF_D(:,1)=MF_row_1(:,4);
+%%
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+
