@@ -1,0 +1,166 @@
+%% UP Down顺时针逆时针旋转90度
+
+%% UP第一层顺时针旋转90度
+function [MF]=UP_1(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第一层的四个行向量封在一个矩阵里
+MF_row_1=[MF_F(1,:),  %前
+          MF_R(1,:),  %右
+          MF_B(1,:),  %后
+          MF_L(1,:)]; %左
+%% UP面的旋转
+MF_U=rot90(MF_U,-1);
+%% UP面的旋转带动了四个侧面矩阵的变化 
+MF_row_1([1,2],:)=MF_row_1([2,1],:);
+MF_row_1([2,3],:)=MF_row_1([3,2],:);
+MF_row_1([3,4],:)=MF_row_1([4,3],:);
+%% 将侧面的矩阵进行更新
+MF_F(1,:)=MF_row_1(1,:);
+MF_R(1,:)=MF_row_1(2,:);
+MF_B(1,:)=MF_row_1(3,:);
+MF_L(1,:)=MF_row_1(4,:);
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+
+%% 第一层逆时针旋转90度
+function [MF]=UP_1_N(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+MF_row_1=[MF_F(1,:),  %前
+          MF_R(1,:),  %右
+          MF_B(1,:),  %后
+          MF_L(1,:)]; %左
+MF_U=rot90(MF_U,1);
+
+MF_row_1([3,4],:)=MF_row_1([4,3],:);
+MF_row_1([2,3],:)=MF_row_1([3,2],:);
+MF_row_1([1,2],:)=MF_row_1([2,1],:);
+
+MF_F(1,:)=MF_row_1(1,:);
+MF_R(1,:)=MF_row_1(2,:);
+MF_B(1,:)=MF_row_1(3,:);
+MF_L(1,:)=MF_row_1(4,:);
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+%% DOWN第三层顺时针旋转90度
+function [MF]=DOWN_3(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第三层的四个行向量封在一个矩阵里
+MF_row_1=[MF_F(3,:),  %前
+          MF_R(3,:),  %右
+          MF_B(3,:),  %后
+          MF_L(3,:)]; %左
+%% DOWN面的旋转
+MF_D=rot90(MF_D,-1);
+%% DOWN面的旋转带动了四个侧面矩阵的变化 
+MF_row_1([1,2],:)=MF_row_1([2,1],:);
+MF_row_1([2,3],:)=MF_row_1([3,2],:);
+MF_row_1([3,4],:)=MF_row_1([4,3],:);
+%% 将侧面的矩阵进行更新
+MF_F(3,:)=MF_row_1(1,:);
+MF_R(3,:)=MF_row_1(2,:);
+MF_B(3,:)=MF_row_1(3,:);
+MF_L(3,:)=MF_row_1(4,:);
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+%% DOWN第三层顺逆时针旋转90度
+function [MF]=DOWN_3_N(MF)
+%% 六个面
+MF_B=MF(:,:,1);
+MF_F=MF(:,:,2);
+MF_R=MF(:,:,3);
+MF_U=MF(:,:,4);
+MF_L=MF(:,:,5);
+MF_D=MF(:,:,6);
+%% 将第三层的四个行向量封在一个矩阵里
+MF_row_1=[MF_F(3,:),  %前
+          MF_R(3,:),  %右
+          MF_B(3,:),  %后
+          MF_L(3,:)]; %左
+%% DOWN面的旋转
+MF_D=rot90(MF_D,1);
+%% DOWN面的旋转带动了四个侧面矩阵的变化 
+
+MF_row_1([3,4],:)=MF_row_1([4,3],:);
+MF_row_1([2,3],:)=MF_row_1([3,2],:);
+MF_row_1([1,2],:)=MF_row_1([2,1],:);
+%% 将侧面的矩阵进行更新
+MF_F(3,:)=MF_row_1(1,:);
+MF_R(3,:)=MF_row_1(2,:);
+MF_B(3,:)=MF_row_1(3,:);
+MF_L(3,:)=MF_row_1(4,:);
+MF=MF_B;
+MF(:,:,2)=MF_F;
+MF(:,:,3)=MF_R;
+MF(:,:,4)=MF_U;
+MF(:,:,5)=MF_L;
+MF(:,:,6)=MF_D;
+% MF;
+% MF_F
+% MF_B
+% MF_L
+% MF_R
+% MF_U
+% MF_D
+end
+
+
+
+
+
