@@ -1,0 +1,184 @@
+%% 颜色识别代码加聚类算法
+%% 作者：安希旭
+%% 说明：用RGB通道识别出颜色，然后从这些颜色像素里随机抽取1000个或者800个像素，进行K-means算法，找出每个色块的代表。
+%% 这次测试识别出魔方某一面的各个色块的颜色，并将色块对应的MF_U（就是魔方的UP面）的坐标对应好
+%% 这次测试只读取了一个魔方面，实际时应该要识别三个魔方面
+%% 没有写进识别白色色块的程序，因为魔方的边缘是白色的，如果不打光很容易混淆，所以决定在打光之后，再测试白色
+close all
+clear
+clc
+rgb = imread('D:\MF2.jpg');
+% figure,imshow(rgb);
+%rgb=im2bw(rgb);
+%% 裁剪图片
+rect=[160,59,470,502];
+I= imcrop(rgb,rect);
+rgb=I;
+rgb=medfilt3(rgb,[3,3,3]);
+figure,imshow(rgb);
+r = rgb(:,:,1);
+g = rgb(:,:,2);
+b = rgb(:,:,3);
+rl = 90;
+gl = 150;
+bl = 80;%可以再小一点
+%% 定义颜色的色域值
+blue=r<=30&g<35&b>50;%%  蓝色
+oran=r>=85&g<=68&b<=110;%% 橘黄色
+
+yell=r>=80&g>=75&b<=95;%% 黄色
+
+red=r>=55&g<=18&b<=50;%% 红色
+% red=r<=10&g<=18&b<=50;
+white=r>=108&g>=105&g<=110&b<115&r<120;%% 白色 这个颜色需要反复测试 需要修改！！！！！
+green=r<=10&g<=25&b<=35;%%绿色
+%% 把颜色裁剪一下，就是不是这个颜色的就删掉，其实就是为了方便观察
+yz = 300;%可以再大挺多
+blueb = bwareaopen(blue,yz);
+oran=bwareaopen(oran,yz);
+red=bwareaopen(red,yz);
+green=bwareaopen(green,yz);
+white=bwareaopen(white,yz);
+%% 显示一下，就是为了看一下颜色识别是否准确
+%  figure,imshow(white);
+%    figure,imshow(red);
+%  figure,imshow(oran);
+wSize = [80,80];
+i=1;
+B=zeros(1,23522);
+C=zeros(1,23522);
+%% 读取所摄取图片的每一个像素值，然后把每一个像素的坐标提出来，放进pt这个矩阵里
+for m=1:503
+    for n=1:471
+        if oran(m,n)==1 || red(m,n)==1 ||blueb(m,n)==1||green(m,n)==1   %||white(m,n)==1
+            
+              B(i)=m;
+              C(i)=n;
+%              pt(:,i)=n;
+              i=i+1;
+%              break;      
+         end
+    end
+end
+% pt=[B',C'];
+pixel=[C',B'];%% 这里全是整个像素的坐标
+% A=mean(pt(:,1));%%这个是求平均值，必要时候改用这个算法
+
+%% 聚类算法开始分类
+time=0;
+
+k=8;%%  这个K，在一面的时候应该是9，三个面的话，就要是27，因为这个是分了多少类
+
+%% 因为像素太多了，这样电脑会算崩，在pixel这些坐标里，随机取800个或者1000个，完成聚类
+x=pixel;
+data=randperm(size(pixel,1),800);
+for i=1:800
+   bt(i,:)= pixel(data(i),:);
+end
+%% 开始设置初始坐标，完成像素块的聚类
+x=bt;
+z=x(1:k,1:2);
+z1=zeros(k,2);
+while time<=1000
+    count=zeros(k,1);%%%每一个聚类中心有多少个属于它的点
+    allsum=zeros(k,2);%%%每一个属于该聚类中心的点到该一个聚类中心的横纵距离之和
+    num=[];%%%%记录下属于该聚类中心点的编号
+    temp=[];%%%%记录下每一个点到聚类中心的距离，找到最小的那个
+    for i=1:size(x,1)
+        for j=1:k
+        temp(j,1)=sqrt((z(j,1)-x(i,1)).^2+(z(j,2)-x(i,2)).^2);%第i个点到第j个聚类中心的距离
+        temp(j,2)=j;
+        end
+        temp=sortrows(temp,1);%对于temp按照第一列降序排序
+        c=temp(1,2);%%%找到最小距离的聚类中心的编号
+        count(c)=count(c)+1;%%%属于这个中心的点的数量加1
+        num(c,count(c))=i;
+        allsum(c,1)=allsum(c,1)+x(i,1);%%%求属于这个聚类中心所有点的横坐标之和
+        allsum(c,2)=allsum(c,2)+x(i,2);%%%求属于这个聚类中心所有点的纵坐标之和
+    end
+    z1(:,1)=allsum(:,1)./count(:);%%%每一个聚类中心所有点横坐标之和/属于该聚类中心的点数为新的横坐标
+    z1(:,2)=allsum(:,2)./count(:);
+    if (z==z1)%%%如果点不再变化
+        break;
+    else
+       z=z1;
+    end
+    time=time+1;
+end
+
+
+%% 完成聚类之后，开始对聚类的点进行以下信息提取，1.聚类点的所处坐标，2.聚类点所代表的颜色
+%% 先测颜色
+%% z1(:,1)是聚类点的横坐标，z1(:,2)是聚类点的纵坐标
+
+for p=1:k  %% 分的那几个聚类点 挨一个去测他们的颜色 
+    A(p,:)=round(z1(p,:));%%依次知道每一个聚类点的坐标，坐标都是小数，要先取整
+%     text(A(:,1),A(:,2),sprintf('(%d, %d)\n',A(:,1),A(:,2)));
+    %% 找到黄色
+    if oran(A(p,2),A(p,1))==1%%  这里，我横纵坐标写反了，导致出现了bug
+         oran_co(p,:)=A(p,:);%% 提出属于橘黄色的中心点的坐标，橘黄色对应魔方里的输出应该是0，对应完颜色，对应位置
+    end
+    %% 找到红色
+    if red(A(p,2),A(p,1))==1
+         red_co(p,:)=A(p,:);
+    end    
+    %% 找到蓝色
+    if blueb(A(p,2),A(p,1))==1
+         blueb_co(p,:)=A(p,:);
+    end    
+    %% 找到绿色
+    if green(A(p,2),A(p,1))==1
+         green_co(p,:)=A(p,:);
+    end    
+    
+end
+
+%% 将矩阵中可能出现的全零行删掉
+oran_co(all(oran_co == 0, 2),:) = [] %%删掉矩阵的全零行
+red_co(all(red_co == 0, 2),:) = []   
+blueb_co(all(blueb_co == 0, 2),:) = []      
+green_co(all(green_co == 0, 2),:) = []      
+
+%% 对应颜色位置!!!!!!!!!!!!!!!
+
+%% 找到橘黄色色块的位置
+for p_0=1:size(oran_co(:,1),1)
+%     Color_orange_zoom(p,:)=oran_co(p,:);  
+[Color_orange_zoom(p_0,1),Color_orange_zoom(p_0,2)]=co_trans(oran_co(p_0,2),oran_co(p_0,1));%%坐标转换一下
+ MF_U(Color_orange_zoom(p_0,1),Color_orange_zoom(p_0,2))=0;%% 橘黄色色块的位置定义好
+end
+
+%% 找到红色色块的位置
+for p_4=1:size(red_co(:,1),1)
+    [Color_red_zoom(p_4,1),Color_red_zoom(p_4,2)]=co_trans(red_co(p_4,2),red_co(p_4,1));
+    MF_U(Color_red_zoom(p_4,1),Color_red_zoom(p_4,2))=4;
+end
+%% 找到蓝色色块的位置
+for p_1=1:size(blueb_co(:,1),1)
+    [Color_blueb_zoom(p_1,1),Color_blueb_zoom(p_1,2)]=co_trans(blueb_co(p_1,2),blueb_co(p_1,1));
+    MF_U(Color_blueb_zoom(p_1,1),Color_blueb_zoom(p_1,2))=1;
+end
+%% 找到绿色色块的位置
+for p_3=1:size(green_co(:,1),1)
+    [Color_green_zoom(p_3,1),Color_green_zoom(p_3,2)]=co_trans(green_co(p_3,2),green_co(p_3,1));
+    MF_U(Color_green_zoom(p_3,1),Color_green_zoom(p_3,2))=3;
+end
+%% 这些是画点的，为了方便直观的看出到底聚类算法分准了没
+% plot(x(:,1),x(:,2),'m*');%% 当我们需要知道具体的数据集坐标时，可以加上这个
+hold on;
+% plot(z1(:,1),z1(:,2),'bo');%% 根据这个确定颜色块的坐标
+plot(A(:,1),A(:,2),'bo');
+axis on;
+% z1(:,1)
+% z1(:,1)
+num(num==0)=NaN;
+for i=1:k
+    if (count(i)==0)%%%这是为了防止有些聚类中心没有符合的点
+        continue;
+    else
+%      disp(['第',num2str(i),'类为:',num2str(num(i,:))]);
+    end
+end
+
+%% 输出MF_U，主要就是要这个矩阵
+MF_U
