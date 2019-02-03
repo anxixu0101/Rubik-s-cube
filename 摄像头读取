@@ -1,0 +1,10 @@
+clc;clear;close all;
+
+%1、读取显示摄像头:
+vid = videoinput('winvideo',1,'YUY2_640x480');
+
+preview(vid);%显示所创建的视频对象
+set(vid,'ReturnedColorSpace','rgb');
+frame = getsnapshot(vid);
+figure;
+imshow(frame);
