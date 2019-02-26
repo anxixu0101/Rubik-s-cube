@@ -1,0 +1,255 @@
+clc;clear;close all;
+%% 裁剪图片
+
+rgb=imread('D:\\MF7.jpg');
+figure,pic = rgb;
+imshow(rgb);
+% [x,y] = [132 108,331 425];%确定图像上的两点利用ginput函数，返回值是两点的坐标
+% x(1)=350;
+% y(1)=180;
+% x(2)=470;
+% y(2)=424;
+% pic_1 = imcrop(pic,[x(1),y(1),abs(x(1)-x(2)),abs(y(1)-y(2))]);
+% 
+% %利用imcrop函数对图像进行切割，输入参数是一个定点坐标，
+% 
+% %从该定点出发向右abs(x(1)-x(2))，向下abs(y(1)-y(2))的区域进行切割
+% 
+% figure,imshow(pic_1);
+% imwrite(pic_1,'1.jpg');
+% 
+% image = pic_1;
+%  
+% % u = 4 * x and v = 2 * y
+% T = [3 0 0; 0 3 0; 0 0 1];
+%  
+% % create spatial transformation structure.
+% transformation = maketform('affine', T);
+%  
+% % apply 2D spatial transformation to image.
+% transformationResult = imtransform(image, transformation);
+% imshow(transformationResult);
+% 
+% 
+% rgb=transformationResult;
+% %% 定义四个分割点
+% plot_1=[132,108];
+% plot_2=[358,206];
+% plot_3=[472,128];
+% plot_4=[319,432];
+
+% hold on,plot([132,358],[108,206],'r');
+%  hold on ,plot([358,472],[206,128],'r');
+% hold on,plot([358,319],[206,432],'r');
+
+r = rgb(:,:,1);
+g = rgb(:,:,2);
+b = rgb(:,:,3);
+rl = 90;
+gl = 150;
+bl = 80;%可以再小一点
+%% 定义颜色的色域值
+blue=r<=20&r>=0&g<=75&g>=30&b>70&b<160;%%  蓝色
+oran=r>=160&r<=255&g>=60&g<=100&b>=30&b<=80;%% 橘黄色
+
+yell=r>=135&r<=180&g<=195&g>=150&b<=110&b>=60;%% 黄色
+
+red=r>=130&r<=143&g<=1&g>=0&b<=3&r>=0;%% 红色
+% red=r<=10&g<=18&b<=50;
+% white=r>=108&g>=105&g<=110&b<115&r<120;%% 白色 这个颜色需要反复测试 需要修改！！！！！
+green=r<=15&r>=0&g<=150&g>=140&b<=66&b>=50;%%绿色
+%% 把颜色裁剪一下，就是不是这个颜色的就删掉，其实就是为了方便观察
+yz = 300;%可以再大挺多
+blueb = bwareaopen(blue,yz);
+oran=bwareaopen(oran,yz);
+red=bwareaopen(red,yz);
+green=bwareaopen(green,yz);
+white=bwareaopen(white,yz);
+yellow=bwareaopen(yell,yz);
+%% 显示一下，就是为了看一下颜色识别是否准确
+% %  figure,imshow(white);
+%     figure,imshow(red);
+%   figure,imshow(oran);
+%  figure,imshow(yell);
+% % % figure,imshow(blueb);
+%  figure,imshow(green);
+
+wSize = [80,80];
+i=1;
+B=zeros(1,23522);
+C=zeros(1,23522);
+%% 读取所摄取图片的每一个像素值，然后把每一个像素的坐标提出来，放进pt这个矩阵里
+for m=1:size(rgb,1)
+    for n=1:size(rgb,2)
+        if oran(m,n)==1 || red(m,n)==1 ||blueb(m,n)==1||green(m,n)==1 ||yell(m,n)==1
+            
+              B(i)=m;
+              C(i)=n;
+%              pt(:,i)=n;
+              i=i+1;
+%              break;      
+         end
+    end
+end
+% pt=[B',C'];
+pixel=[C',B'];%% 这里全是整个像素的坐标
+%% 聚类算法开始分类
+time=0;
+
+k=18;%%  这个K，在一面的时候应该是9，三个面的话，就要是27，因为这个是分了多少类
+
+%% 因为像素太多了，这样电脑会算崩，在pixel这些坐标里，随机取800个或者1000个，完成聚类
+x=pixel;
+data=randperm(size(pixel,1),46000);
+for i=1:46000
+   bt(i,:)= pixel(data(i),:);
+end
+%% 开始设置初始坐标，完成像素块的聚类
+x=bt;
+% z=x(1:k,1:2);
+load Data_intialize;
+z=Data_intialize;
+z1=zeros(k,2);
+while time<=2000
+    count=zeros(k,1);%%%每一个聚类中心有多少个属于它的点
+    allsum=zeros(k,2);%%%每一个属于该聚类中心的点到该一个聚类中心的横纵距离之和
+    num=[];%%%%记录下属于该聚类中心点的编号
+    temp=[];%%%%记录下每一个点到聚类中心的距离，找到最小的那个
+    for i=1:size(x,1)
+        for j=1:k
+        temp(j,1)=sqrt((z(j,1)-x(i,1)).^2+(z(j,2)-x(i,2)).^2);%第i个点到第j个聚类中心的距离       
+        temp(j,2)=j;
+        end
+        temp=sortrows(temp,1);%对于temp按照第一列降序排序
+        c=temp(1,2);%%%找到最小距离的聚类中心的编号
+        count(c)=count(c)+1;%%%属于这个中心的像素点的数量加1
+        num(c,count(c))=i;
+        allsum(c,1)=allsum(c,1)+x(i,1);%%%求属于这个聚类中心所有点的横坐标之和
+        allsum(c,2)=allsum(c,2)+x(i,2);%%%求属于这个聚类中心所有点的纵坐标之和
+    end
+    %% 所有聚类点的横纵坐标的求得
+    z1(:,1)=allsum(:,1)./count(:);%%%每一个聚类中心所有点横坐标之和/属于该聚类中心的点数为新的横坐标
+    z1(:,2)=allsum(:,2)./count(:);
+    if (z==z1)%%%如果点不再变化
+        break;
+    else
+       z=z1;
+    end
+    time=time+1;
+end
+
+
+%% 完成聚类之后，开始对聚类的点进行以下信息提取，1.聚类点的所处坐标，2.聚类点所代表的颜色
+%% 先测颜色
+%% z1(:,1)是聚类点的横坐标，z1(:,2)是聚类点的纵坐标
+
+for p=1:k  %% 分的那几个聚类点 挨一个去测他们的颜色 
+%     A(p,:)=round(z1(p,:));%%依次知道每一个聚类点的坐标，坐标都是小数，要先取整
+    A=round(z1);
+    %% 找到橘黄色
+    if oran(A(p,2),A(p,1))==1%%  这里，我横纵坐标写反了，导致出现了bug
+         oran_zuobiao(p,:)=A(p,:);%% 提出属于橘黄色的中心点的坐标，橘黄色对应魔方里的输出应该是0，对应完颜色，对应位置
+    end
+    if red(A(p,2),A(p,1))==1
+        red_zuobiao(p,:)=A(p,:);
+    end
+    if yell(A(p,2),A(p,1))==1
+        yell_zuobiao(p,:)=A(p,:);
+    end
+    if green(A(p,2),A(p,1))==1
+        green_zuobiao(p,:)=A(p,:);
+    end
+end
+%% 先将这个图的两个魔方面分开
+MF_coord=round(z1);
+MF_coord=sortrows(MF_coord);
+MF_coord_1=MF_coord(1:9,:);
+MF_coord_2=MF_coord(10:18,:);
+%% MF_coord_1是左边那面，MF_coord_2是右边那面
+%% 将左边那面的颜色顺序排好，也就是把左边那一面分成三列
+% MF_coord_1_A=MF_coord_1(1:3,:);
+% MF_coord_1_A=MF_coord_1_A(:,1);
+% for i=1:3
+%     [row_1(i,:),col_1(i,:)]=find(MF_coord_1_A==MF_coord_1_A(i,:));
+%     if row_1(i,:)==1
+%         m_1(i,:)=3;
+%     end
+%     if row_1(i,:)==2
+%             m_1(i,:)=2;
+%     end
+%     if row_1(i,:)==3
+%         m_1(i,:)=1;
+%     end
+%      n_1=col_1;
+% end
+MF_coord_1([3,1],:)=MF_coord_1([1,3],:);
+MF_coord_1([2,4],:)=MF_coord_1([4,2],:);
+MF_coord_1([8,6],:)=MF_coord_1([6,8],:);
+MF_coord_1([8,2],:)=MF_coord_1([2,8],:);
+MF_coord_1([7,9],:)=MF_coord_1([9,7],:);
+MF_coord_1([7,3],:)=MF_coord_1([3,7],:);
+% output_color=[];
+for i_1=1:9
+    
+    if oran(MF_coord(i_1,2),MF_coord(i_1,1))==1
+         output_color_1(1,i_1)='o';
+    elseif yell(MF_coord(i_1,2),MF_coord(i_1,1))==1
+        output_color_1(1,i_1)='y';
+    elseif blueb(MF_coord(i_1,2),MF_coord(i_1,1)) ==1
+        output_color_1(1,i_1)='b';
+    elseif green(MF_coord(i_1,2),MF_coord(i_1,1)) ==1
+        output_color_1(1,i_1)='g';
+    elseif red(MF_coord(i_1,2),MF_coord(i_1,1)) ==1
+        output_color_1(1,i_1)='r';   
+    elseif white(MF_coord(i_1,2),MF_coord(i_1,1)) ==1
+        output_color_1(1,i_1)='w';   
+    end
+end
+%% 开始对MF_coord_2进行操作
+
+MF_coord_2([3,1],:)=MF_coord_2([1,3],:);
+MF_coord_2([2,4],:)=MF_coord_2([4,2],:);
+MF_coord_2([8,6],:)=MF_coord_2([6,8],:);
+MF_coord_2([8,2],:)=MF_coord_2([2,8],:);
+MF_coord_2([7,9],:)=MF_coord_2([9,7],:);
+MF_coord_2([7,3],:)=MF_coord_2([3,7],:);
+
+for i_2=1:9
+    
+    if oran(MF_coord_2(i_2,2),MF_coord_2(i_2,1))==1
+         output_color_2(1,i_2)='o';
+    elseif yell(MF_coord_2(i_2,2),MF_coord_2(i_2,1))==1
+        output_color_2(1,i_2)='y';
+    elseif blueb(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+        output_color_2(1,i_2)='b';
+    elseif green(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+        output_color_2(1,i_2)='g';
+    elseif red(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+        output_color_2(1,i_2)='r';   
+    elseif white(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+        output_color_2(1,i_2)='w';   
+    end
+end
+
+
+
+
+
+
+
+%% 这些是画点的，为了方便直观的看出到底聚类算法分准了没
+% plot(x(:,1),x(:,2),'m*');%% 当我们需要知道具体的数据集坐标时，可以加上这个
+hold on;
+ plot(z1(:,1),z1(:,2),'bo');%% 根据这个确定颜色块的坐标
+% plot(A(:,1),A(:,2),'bo');
+axis on;
+% z1(:,1)
+% z1(:,1)
+num(num==0)=NaN;
+for i=1:k
+    if (count(i)==0)%%%这是为了防止有些聚类中心没有符合的点
+        continue;
+    else
+%      disp(['第',num2str(i),'类为:',num2str(num(i,:))]);
+    end
+end
