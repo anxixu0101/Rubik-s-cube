@@ -1,0 +1,452 @@
+%% 总体识别代码
+%% 作者：安希旭
+%% 对应机械结构：余姚比赛
+%% 黄色+蓝红+绿橘+白
+%% 先对蓝红，白色，黄色进行拍照
+%% 顶上的摄像头是1蓝红  扫白的是2 扫黄的是3  底层是4绿橘   3+1+4+2
+vid_1 = videoinput('winvideo',1,'YUY2_640x480');
+vid_2 = videoinput('winvideo',2,'YUY2_640x480');
+vid_3 = videoinput('winvideo',3,'YUY2_640x480');
+preview(vid_1);
+preview(vid_2);
+preview(vid_3);
+set(vid_1,'ReturnedColorSpace','rgb');
+set(vid_2,'ReturnedColorSpace','rgb');
+set(vid_3,'ReturnedColorSpace','rgb');
+a = input('开始检测请按1：');
+if a==1
+frame_1= getsnapshot(vid_1);
+frame_2= getsnapshot(vid_2);
+frame_3= getsnapshot(vid_3);
+figure,imshow(frame_1);
+figure,imshow(frame_2);
+figure,imshow(frame_3);
+end
+img_1=frame_1;%% 识别蓝红
+img_2=frame_2;%% 识别白色
+img_3=frame_3;%% 识别黄色
+
+
+
+
+                                                             %% 对中心块是蓝红的进行识别
+z_1 =[%% 蓝
+    401    56
+    406   119
+    412   192
+    308    51
+    305   115
+    307   190
+    216    49 
+   204   113
+   201   184 
+   %% 红
+    407   272
+    395   330
+    383   378
+    302   267
+    298   326
+    296   375
+    199   263
+    203   322
+    209   372   
+];
+%% HSV阈值范围
+%% 各个颜色的HSV阈值 此为存放格式[Hmax Hwidth;Smax Smin;Lmax Lmin]
+threshold_red_1 = [0.054 0.341;1.000 0.766;1.000 0.388]; 
+threshold_orange_1 = [0.034 0.291;0.793 0.142;1.000 0.673] ; 
+threshold_green_1 = [0.502 0.173;0.943 0.183;1.000 0.298];
+%% 在宾馆修改，Hwidth由0.150调整到0.176 光线暖光，无灯罩
+threshold_blue_1 = [0.739 0.176;1.000 0.508;1.000 0.140];%  threshold_blue_1 = [0.739 0.150;1.000 0.508;1.000 0.140];
+threshold_white_1 = [1.000 1.000;0.168 0.000;1.000 0.360];
+threshold_yellow_1= [0.261 0.080;0.582 0.021;1.000 0.328];
+hold on ,imshow(img_1);
+imgrgb = img_1;
+img_1=rgb2hsv(img_1);
+% imshow(img4)
+H_1=img_1(:,:,1);
+S_1=img_1(:,:,2);
+V_1=img_1(:,:,3);
+
+%% 设置阈值
+%% 红色判断
+if (threshold_red_1(1,1)-threshold_red_1(1,2))>=0
+red_1=H_1>=(threshold_red_1(1,1)-threshold_red_1(1,2))&H_1<=threshold_red_1(1,1)&S_1>=threshold_red_1(2,2)&S_1<=threshold_red_1(2,1)&V_1>=threshold_red_1(3,2)&V_1<=threshold_red_1(3,1);
+else
+% red=H>=1+threshold_red(1,1)-threshold_red(1,2)|H<=threshold_red(1,1)&S>=threshold_red(2,2)&S<=threshold_red(2,1)&V>=threshold_red(3,2)&V<=threshold_red(3,1);
+
+red_1=S_1>=threshold_red_1(2,2)&S_1<=threshold_red_1(2,1)&V_1>=threshold_red_1(3,2)&V_1<=threshold_red_1(3,1)&(H_1>=(1+threshold_red_1(1,1)-threshold_red_1(1,2))|H_1<=threshold_red_1(1,1)&S_1>=threshold_red_1(2,2));
+end
+
+
+
+%% 橘黄色判断
+if (threshold_orange_1(1,1)-threshold_orange_1(1,2))>=0
+orange_1=H_1>=(threshold_orange_1(1,1)-threshold_orange_1(1,2))&H_1<=threshold_orange_1(1,1)&S_1>=threshold_orange_1(2,2)&S_1<=threshold_orange_1(2,1)&V_1>=threshold_orange_1(3,2)&V_1<=threshold_orange_1(3,1);
+else
+% orange=H>=(1+threshold_orange(1,1)-threshold_orange(1,2))||H<=threshold_orange(1,1)&S>=threshold_orange(2,2)&S<=threshold_orange(2,1)&V>=threshold_orange(3,2)&V<=threshold_orange(3,1);
+orange_1=S_1>=threshold_orange_1(2,2)&S_1<=threshold_orange_1(2,1)&V_1>=threshold_orange_1(3,2)&V_1<=threshold_orange_1(3,1)&(H_1>=(1+(threshold_orange_1(1,1)-threshold_orange_1(1,2)))|H_1<=threshold_orange_1(1,1));
+end
+
+%% 黄色判断
+if (threshold_yellow_1(1,1)-threshold_yellow_1(1,2))>=0
+yellow_1=H_1>=(threshold_yellow_1(1,1)-threshold_yellow_1(1,2))&H_1<=threshold_yellow_1(1,1)&S_1>=threshold_yellow_1(2,2)&S_1<=threshold_yellow_1(2,1)&V_1>=threshold_yellow_1(3,2)&V_1<=threshold_yellow_1(3,1);
+else
+yellow_1=S_1>=threshold_yellow_1(2,2)&S_1<=threshold_yellow_1(2,1)&V_1>=threshold_yellow_1(3,2)&V_1<=threshold_yellow_1(3,1)&H_1>=(1+threshold_yellow_1(1,1)-threshold_yellow_1(1,2))|H_1<=threshold_yellow_1(1,1);    
+end
+%% 绿色判断
+if (threshold_green_1(1,1)-threshold_green_1(1,2))>=0
+green_1=H_1>=(threshold_green_1(1,1)-threshold_green_1(1,2))&H_1<=threshold_green_1(1,1)&S_1>=threshold_green_1(2,2)&S_1<=threshold_green_1(2,1)&V_1>=threshold_green_1(3,2)&V_1<=threshold_green_1(3,1);
+else
+green_1=H_1>=(1+(threshold_green_1(1,1)-threshold_green_1(1,2)))|H_1<=threshold_green_1(1,1)&S_1>=threshold_green_1(2,2)&S_1<=threshold_green_1(2,1)&V_1>=threshold_green_1(3,2)&V_1<=threshold_green_1(3,1);    
+end
+%% 蓝色判断
+if (threshold_blue_1(1,1)-threshold_blue_1(1,2))>=0
+blue_1=H_1>=(threshold_blue_1(1,1)-threshold_blue_1(1,2))&H_1<=threshold_blue_1(1,1)&S_1>=threshold_blue_1(2,2)&S_1<=threshold_blue_1(2,1)&V_1>=threshold_blue_1(3,2)&V_1<=threshold_blue_1(3,1);
+else
+blue_1=S_1>=threshold_blue_1(2,2)&S_1<=threshold_blue_1(2,1)&V_1>=threshold_blue_1(3,2)&V_1<=threshold_blue_1(3,1)&H_1>=(1+(threshold_blue_1(1,1)-threshold_blue_1(1,2)))|H_1<=threshold_blue_1(1,1);
+end
+%% 白色判断
+if (threshold_white_1(1,1)-threshold_white_1(1,2))>=0
+white_1=H_1>=(threshold_white_1(1,1)-threshold_white_1(1,2))&H_1<=threshold_white_1(1,1)&S_1>=threshold_white_1(2,2)&S_1<=threshold_white_1(2,1)&V_1>=threshold_white_1(3,2)&V_1<=threshold_white_1(3,1);
+else
+white_1=S_1>=threshold_white_1(2,2)&S_1<=threshold_white_1(2,1)&V_1>=threshold_white_1(3,2)&V_1<=threshold_white_1(3,1)&(H_1>=(1+(threshold_white_1(1,1)-threshold_white_1(1,2)))|H_1<=threshold_white_1(1,1));
+end
+hold on;
+MF_coord_1=z_1;
+for i_1=1:18
+    hold on ,plot(MF_coord_1(i_1,1),MF_coord_1(i_1,2),'r+');
+    if green_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='g';      
+    elseif yellow_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='y';
+    elseif red_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='r'; 
+    elseif white_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='w';  
+     elseif blue_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='b';  
+      elseif orange_1(MF_coord_1(i_1,2),MF_coord_1(i_1,1)) ==1
+         output_color_1(1,i_1)='o';   
+    end  
+   
+end   
+    output_color_1 %% 蓝红色输出
+    
+    
+    
+                                                        %% 对中心块是白色的进行识别
+    z_2=[   132   243
+          233   155
+          316    51
+          219   349
+          331   251
+          433   142
+          316   450
+          423   358
+          521   260  
+];
+threshold_red_2 = [0.027 0.232;1.000 0.766;1.000 0.388] ; %[0.054 0.341;1.000 0.766;1.000 0.388] 
+
+% threshold_orange = [0.034 0.291;0.793 0.387;1.000 0.673] ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+threshold_orange_2 =[0.176 0.285;0.914 0.142;1.000 0.673] ;
+%threshold_yellow = [0.195 0.080;0.582 0.021;0.957 0.328];
+threshold_green_2 = [0.502 0.173;0.943 0.183;0.960 0.298];
+threshold_blue_2 = [0.739 0.176;1.000 0.508;1.000 0.140];
+threshold_white_2 = [1.000 1.000;0.022 0.000;1.000 0.360];
+threshold_yellow_2 = [0.261 0.080;0.582 0.021;1.000 0.328];
+imshow(img_2);
+imgrgb = img_2;
+img_2=rgb2hsv(img_2);
+% imshow(img4)
+H_2=img_2(:,:,1);
+S_2=img_2(:,:,2);
+V_2=img_2(:,:,3);
+
+%% 设置阈值
+%% 红色判断
+if (threshold_red_2(1,1)-threshold_red_2(1,2))>=0
+red_2=H_2>=(threshold_red_2(1,1)-threshold_red_2(1,2))&H_2<=threshold_red_2(1,1)&S_2>=threshold_red_2(2,2)&S_2<=threshold_red_2(2,1)&V_2>=threshold_red_2(3,2)&V_2<=threshold_red_2(3,1);
+else
+% red=H>=1+threshold_red(1,1)-threshold_red(1,2)|H<=threshold_red(1,1)&S>=threshold_red(2,2)&S<=threshold_red(2,1)&V>=threshold_red(3,2)&V<=threshold_red(3,1);
+
+red_2=S_2>=threshold_red_2(2,2)&S_2<=threshold_red_2(2,1)&V_2>=threshold_red_2(3,2)&V_2<=threshold_red_2(3,1)&(H_2>=(1+threshold_red_2(1,1)-threshold_red_2(1,2))|H_2<=threshold_red_2(1,1));%&S<=threshold_red(2,2);
+end
+
+
+
+%% 橘黄色判断
+if (threshold_orange_2(1,1)-threshold_orange_2(1,2))>=0
+orange_2=H_2>=(threshold_orange_2(1,1)-threshold_orange_2(1,2))&H_2<=threshold_orange_2(1,1)&S_2>=threshold_orange_2(2,2)&S_2<=threshold_orange_2(2,1)&V_2>=threshold_orange_2(3,2)&V_2<=threshold_orange_2(3,1);
+else
+% orange=H>=(1+threshold_orange(1,1)-threshold_orange(1,2))||H<=threshold_orange(1,1)&S>=threshold_orange(2,2)&S<=threshold_orange(2,1)&V>=threshold_orange(3,2)&V<=threshold_orange(3,1);
+orange_2=S_2>=threshold_orange_2(2,2)&S_2<=threshold_orange_2(2,1)&V_2>=threshold_orange_2(3,2)&V_2<=threshold_orange_2(3,1)&(H_2>=(1+threshold_orange_2(1,1)-threshold_orange_2(1,2))|H_2<=threshold_orange_2(1,1));
+end
+
+%% 黄色判断
+if (threshold_yellow_2(1,1)-threshold_yellow_2(1,2))>0
+yellow_2=H_2>=(threshold_yellow_2(1,1)-threshold_yellow_2(1,2))&H_2<=threshold_yellow_2(1,1)&S_2>=threshold_yellow_2(2,2)&S_2<=threshold_yellow_2(2,1)&V_2>=threshold_yellow_2(3,2)&V_2<=threshold_yellow_2(3,1);
+else
+yellow_2=S_2>=threshold_yellow_2(2,2)&S_2<=threshold_yellow_2(2,1)&V_2>=threshold_yellow_2(3,2)&V_2<=threshold_yellow_2(3,1)&H_2>=(1+threshold_yellow_2(1,1)-threshold_yellow_2(1,2))|H_2<=threshold_yellow_2(1,1);    
+end
+%% 绿色判断
+if (threshold_green_2(1,1)-threshold_green_2(1,2))>0
+green_2=H_2>=(threshold_green_2(1,1)-threshold_green_2(1,2))&H_2<=threshold_green_2(1,1)&S_2>=threshold_green_2(2,2)&S_2<=threshold_green_2(2,1)&V_2>=threshold_green_2(3,2)&V_2<=threshold_green_2(3,1);
+else
+green_2=H_2>=(1+(threshold_green_2(1,1)-threshold_green_2(1,2)))|H_2<=threshold_green_2(1,1)&S_2>=threshold_green_2(2,2)&S_2<=threshold_green_2(2,1)&V_2>=threshold_green_2(3,2)&V_2<=threshold_green_2(3,1);    
+end
+%% 蓝色判断
+if (threshold_blue_2(1,1)-threshold_blue_2(1,2))>0
+blue_2=H_2>=(threshold_blue_2(1,1)-threshold_blue_2(1,2))&H_2<=threshold_blue_2(1,1)&S_2>=threshold_blue_2(2,2)&S_2<=threshold_blue_2(2,1)&V_2>=threshold_blue_2(3,2)&V_2<=threshold_blue_2(3,1);
+else
+blue_2=S_2>=threshold_blue_2(2,2)&S_2<=threshold_blue_2(2,1)&V_2>=threshold_blue_2(3,2)&V_2<=threshold_blue_2(3,1)&(H_2>=(1+(threshold_blue_2(1,1)-threshold_blue_2(1,2)))|H_2<=threshold_blue_2(1,1));
+end
+%% 白色判断
+if (threshold_white_2(1,1)-threshold_white_2(1,2))>=0
+white_2=H_2>=(threshold_white_2(1,1)-threshold_white_2(1,2))&H_2<=threshold_white_2(1,1)&S_2>=threshold_white_2(2,2)&S_2<=threshold_white_2(2,1)&V_2>=threshold_white_2(3,2)&V_2<=threshold_white_2(3,1);
+else
+white_2=S_2>=threshold_white_2(2,2)&S_2<=threshold_white_2(2,1)&V_2>=threshold_white_2(3,2)&V_2<=threshold_white_2(3,1)&(H_2>=(1+(threshold_white_2(1,1)-threshold_white_2(1,2)))|H_2<=threshold_white_2(1,1));
+end
+hold on;
+MF_coord_2=z_2;
+
+for i_2=1:9
+     hold on,plot(MF_coord_2(i_2,1),MF_coord_2(i_2,2),'r+');
+    if green_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='g';      
+    elseif yellow_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='y';
+    elseif red_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='r'; 
+          a(i_2,1)=MF_coord_2(i_2,2);
+          a(i_2,2)=MF_coord_2(i_2,1);
+    elseif white_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='w';  
+    elseif blue_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='b';  
+    elseif orange_2(MF_coord_2(i_2,2),MF_coord_2(i_2,1)) ==1
+         output_color_2(1,i_2)='o';           
+    end    
+end   
+    output_color_2    %白色
+
+                                                        %% 识别中心块是黄色
+z_3=[  
+   319   436
+   215   348
+   116   246
+   429   351
+   322   246
+   219   138
+   535   249
+   433   146
+   331   38
+     ];
+%% HSV阈值范围
+%% 各个颜色的HSV阈值 此为存放格式[Hmax Hwidth;Smax Smin;Lmax Lmin]
+
+threshold_red_3 = [0.054 0.341;1.000 0.766;1.000 0.388]; %[0.054 0.341;1.000 0.766;1.000 0.388] 
+threshold_orange_3 = [0.034 0.291;0.793 0.142;1.000 0.673] ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+threshold_green_3 = [0.502 0.173;0.943 0.183;1.000 0.298];
+threshold_blue_3 = [0.739 0.144;1.000 0.255;1.000 0.140];
+threshold_white_3 = [1.000 0.462;0.168 0.000;1.000 0.360];
+threshold_yellow_3= [0.261 0.1210;0.582 0.021;1.000 0.328];
+img_3=frame_3;
+imshow(img_3);
+imgrgb = img_3;
+hold on
+for i=1:9
+    plot(z_3(i,1),z_3(i,2),'r+');
+end
+img_3=rgb2hsv(img_3);
+
+H_3=img_3(:,:,1);
+S_3=img_3(:,:,2);
+V_3=img_3(:,:,3);
+
+%% 设置阈值
+%% 红色判断
+if (threshold_red_3(1,1)-threshold_red_3(1,2))>=0
+red_3=H_3>=(threshold_red_3(1,1)-threshold_red_3(1,2))&H_3<=threshold_red_3(1,1)&S_3>=threshold_red_3(2,2)&S_3<=threshold_red_3(2,1)&V_3>=threshold_red_3(3,2)&V_3<=threshold_red_3(3,1);
+else
+% red=H>=1+threshold_red(1,1)-threshold_red(1,2)|H<=threshold_red(1,1)&S>=threshold_red(2,2)&S<=threshold_red(2,1)&V>=threshold_red(3,2)&V<=threshold_red(3,1);
+
+red_3=S_3>=threshold_red_3(2,2)&S_3<=threshold_red_3(2,1)&V_3>=threshold_red_3(3,2)&V_3<=threshold_red_3(3,1)&(H_3>=(1+threshold_red_3(1,1)-threshold_red_3(1,2))|H_3<=threshold_red_3(1,1)&S_3>=threshold_red_3(2,2));
+end
+
+
+
+%% 橘黄色判断
+if (threshold_orange_3(1,1)-threshold_orange_3(1,2))>=0
+orange_3=H_3>=(threshold_orange_3(1,1)-threshold_orange_3(1,2))&H_3<=threshold_orange_3(1,1)&S_3>=threshold_orange_3(2,2)&S_3<=threshold_orange_3(2,1)&V_3>=threshold_orange_3(3,2)&V_3<=threshold_orange_3(3,1);
+else
+% orange=H>=(1+threshold_orange(1,1)-threshold_orange(1,2))||H<=threshold_orange(1,1)&S>=threshold_orange(2,2)&S<=threshold_orange(2,1)&V>=threshold_orange(3,2)&V<=threshold_orange(3,1);
+orange_3=S_3>=threshold_orange_3(2,2)&S_3<=threshold_orange_3(2,1)&V_3>=threshold_orange_3(3,2)&V_3<=threshold_orange_3(3,1)&(H_3>=(1+(threshold_orange_3(1,1)-threshold_orange_3(1,2)))|H_3<=threshold_orange_3(1,1));
+end
+
+%% 黄色判断
+if (threshold_yellow_3(1,1)-threshold_yellow_3(1,2))>0
+yellow_3=H_3>=(threshold_yellow_3(1,1)-threshold_yellow_3(1,2))&H_3<=threshold_yellow_3(1,1)&S_3>=threshold_yellow_3(2,2)&S_3<=threshold_yellow_3(2,1)&V_3>=threshold_yellow_3(3,2)&V_3<=threshold_yellow_3(3,1);
+else
+yellow_3=S_3>=threshold_yellow_3(2,2)&S_3<=threshold_yellow_3(2,1)&V_3>=threshold_yellow_3(3,2)&V_3<=threshold_yellow_3(3,1)&(H_3>=(1+threshold_yellow_3(1,1)-threshold_yellow_3(1,2))|H_3<=threshold_yellow_3(1,1));    
+end
+%% 绿色判断
+if (threshold_green_3(1,1)-threshold_green_3(1,2))>0
+green_3=H_3>=(threshold_green_3(1,1)-threshold_green_3(1,2))&H_3<=threshold_green_3(1,1)&S_3>=threshold_green_3(2,2)&S_3<=threshold_green_3(2,1)&V_3>=threshold_green_3(3,2)&V_3<=threshold_green_3(3,1);
+else
+green_3=H_3>=(1+(threshold_green_3(1,1)-threshold_green_3(1,2)))|H_3<=threshold_green_3(1,1)&S_3>=threshold_green_3(2,2)&S_3<=threshold_green_3(2,1)&V_3>=threshold_green_3(3,2)&V_3<=threshold_green_3(3,1);    
+end
+%% 蓝色判断
+if (threshold_blue_3(1,1)-threshold_blue_3(1,2))>0
+blue_3=H_3>=(threshold_blue_3(1,1)-threshold_blue_3(1,2))&H_3<=threshold_blue_3(1,1)&S_3>=threshold_blue_3(2,2)&S_3<=threshold_blue_3(2,1)&V_3>=threshold_blue_3(3,2)&V_3<=threshold_blue_3(3,1);
+else
+blue_3=S_3>=threshold_blue_3(2,2)&S_3<=threshold_blue_3(2,1)&V_3>=threshold_blue_3(3,2)&V_3<=threshold_blue_3(3,1)&(H_3>=(1+(threshold_blue_3(1,1)-threshold_blue_3(1,2)))|H_3<=threshold_blue_3(1,1));
+end
+%% 白色判断
+if (threshold_white_3(1,1)-threshold_white_3(1,2))>0
+white_3=H_3>=(threshold_white_3(1,1)-threshold_white_3(1,2))&H_3<=threshold_white_3(1,1)&S_3>=threshold_white_3(2,2)&S_3<=threshold_white_3(2,1)&V_3>=threshold_white_3(3,2)&V_3<=threshold_white_3(3,1);
+else
+white_3=S_3>=threshold_white_3(2,2)&S_3<=threshold_white_3(2,1)&V_3>=threshold_white_3(3,2)&V_3<=threshold_white_3(3,1)&(H_3>=(1+(threshold_white_3(1,1)-threshold_white_3(1,2)))|H_3<=threshold_white_3(1,1));
+end
+hold on;
+MF_coord_3=z_3;
+for i_3=1:9
+    if green_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='g';      
+    elseif yellow_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='y';
+    elseif red_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='r'; 
+          a(i_3,1)=MF_coord_3(i_3,2);
+          a(i_3,2)=MF_coord_3(i_3,1);
+    elseif white_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='w';  
+     elseif blue_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='b';  
+      elseif orange_3(MF_coord_3(i_3,2),MF_coord_3(i_3,1)) ==1
+         output_color_3(1,i_3)='o';   
+    end  
+   
+end   
+    output_color_3      %% 黄色
+
+    
+    
+                                                  %%  检测最底层的绿橘色
+b = input('开始检测底层颜色的话请按2：');  
+if b==2
+frame_4= getsnapshot(vid_1);
+figure,imshow(frame_4);
+end
+z_4=[  
+    %%绿色
+    398    54
+    404   117
+    410   190
+    304    51
+     305   115
+    304   189
+    213    49
+    205   111
+    197   183
+    %% 橘黄
+    405   270 
+    391   329
+    381   377
+    302   265
+    295   325
+    293   373
+    196   263
+    199   321 
+   208   371
+   ];
+%% HSV阈值范围
+%% 各个颜色的HSV阈值 此为存放格式[Hmax Hwidth;Smax Smin;Lmax Lmin]
+threshold_red_4 = [0.054 0.341;1.000 0.766;1.000 0.388]; %[0.054 0.341;1.000 0.766;1.000 0.388] 
+
+threshold_orange_4 = [0.034 0.291;0.793 0.142;1.000 0.673] ; 
+threshold_green_4 = [0.502 0.173;0.943 0.183;1.000 0.298];
+threshold_blue_4 = [0.739 0.150;1.000 0.508;1.000 0.140];
+threshold_white_4 = [1.000 1.000;0.168 0.000;1.000 0.360];
+threshold_yellow_4 = [0.261 0.080;0.582 0.021;1.000 0.328];
+img_4=frame_4;
+hold on ,imshow(img_4);
+imgrgb = img_4;
+img_4=rgb2hsv(img_4);
+% imshow(img4)
+H_4=img_4(:,:,1);
+S_4=img_4(:,:,2);
+V_4=img_4(:,:,3);
+
+%% 设置阈值
+%% 红色判断
+if (threshold_red_4(1,1)-threshold_red_4(1,2))>=0
+red_4=H_4>=(threshold_red_4(1,1)-threshold_red_4(1,2))&H_4<=threshold_red_4(1,1)&S_4>=threshold_red_4(2,2)&S_4<=threshold_red_4(2,1)&V_4>=threshold_red_4(3,2)&V_4<=threshold_red_4(3,1);
+else
+% red=H>=1+threshold_red(1,1)-threshold_red(1,2)|H<=threshold_red(1,1)&S>=threshold_red(2,2)&S<=threshold_red(2,1)&V>=threshold_red(3,2)&V<=threshold_red(3,1);
+
+red_4=S_4>=threshold_red_4(2,2)&S_4<=threshold_red_4(2,1)&V_4>=threshold_red_4(3,2)&V_4<=threshold_red_4(3,1)&(H_4>=(1+threshold_red_4(1,1)-threshold_red_4(1,2))|H_4<=threshold_red_4(1,1)&S_4>=threshold_red_4(2,2));
+end
+
+
+
+%% 橘黄色判断
+if (threshold_orange_4(1,1)-threshold_orange_4(1,2))>=0
+orange_4=H_4>=(threshold_orange_4(1,1)-threshold_orange_4(1,2))&H_4<=threshold_orange_4(1,1)&S_4>=threshold_orange_4(2,2)&S_4<=threshold_orange_4(2,1)&V_4>=threshold_orange_4(3,2)&V_4<=threshold_orange_4(3,1);
+else
+% orange=H>=(1+threshold_orange(1,1)-threshold_orange(1,2))||H<=threshold_orange(1,1)&S>=threshold_orange(2,2)&S<=threshold_orange(2,1)&V>=threshold_orange(3,2)&V<=threshold_orange(3,1);
+orange_4=S_4>=threshold_orange_4(2,2)&S_4<=threshold_orange_4(2,1)&V_4>=threshold_orange_4(3,2)&V_4<=threshold_orange_4(3,1)&(H_4>=(1+(threshold_orange_4(1,1)-threshold_orange_4(1,2)))|H_4<=threshold_orange_4(1,1));
+end
+
+%% 黄色判断
+if (threshold_yellow_4(1,1)-threshold_yellow_4(1,2))>0
+yellow_4=H_4>=(threshold_yellow_4(1,1)-threshold_yellow_4(1,2))&H_4<=threshold_yellow_4(1,1)&S_4>=threshold_yellow_4(2,2)&S_4<=threshold_yellow_4(2,1)&V_4>=threshold_yellow_4(3,2)&V_4<=threshold_yellow_4(3,1);
+else
+yellow_4=S_4>=threshold_yellow_4(2,2)&S_4<=threshold_yellow_4(2,1)&V_4>=threshold_yellow_4(3,2)&V_4<=threshold_yellow_4(3,1)&H_4>=(1+threshold_yellow_4(1,1)-threshold_yellow_4(1,2))|H_4<=threshold_yellow_4(1,1);    
+end
+%% 绿色判断
+if (threshold_green_4(1,1)-threshold_green_4(1,2))>0
+green_4=H_4>=(threshold_green_4(1,1)-threshold_green_4(1,2))&H_4<=threshold_green_4(1,1)&S_4>=threshold_green_4(2,2)&S_4<=threshold_green_4(2,1)&V_4>=threshold_green_4(3,2)&V_4<=threshold_green_4(3,1);
+else
+green_4=H_4>=(1+(threshold_green_4(1,1)-threshold_green_4(1,2)))|H_4<=threshold_green_4(1,1)&S_4>=threshold_green_4(2,2)&S_4<=threshold_green_4(2,1)&V_4>=threshold_green_4(3,2)&V_4<=threshold_green_4(3,1);    
+end
+%% 蓝色判断
+if (threshold_blue_4(1,1)-threshold_blue_4(1,2))>0
+blue_4=H_4>=(threshold_blue_4(1,1)-threshold_blue_4(1,2))&H_4<=threshold_blue_4(1,1)&S_4>=threshold_blue_4(2,2)&S_4<=threshold_blue_4(2,1)&V_4>=threshold_blue_4(3,2)&V_4<=threshold_blue_4(3,1);
+else
+blue_4=S_4>=threshold_blue_4(2,2)&S_4<=threshold_blue_4(2,1)&V_4>=threshold_blue_4(3,2)&V_4<=threshold_blue_4(3,1)&H_4>=(1+(threshold_blue_4(1,1)-threshold_blue_4(1,2)))|H_4<=threshold_blue_4(1,1);
+end
+%% 白色判断
+if (threshold_white_4(1,1)-threshold_white_4(1,2))>0
+white_4=H_4>=(threshold_white_4(1,1)-threshold_white_4(1,2))&H_4<=threshold_white_4(1,1)&S_4>=threshold_white_4(2,2)&S_4<=threshold_white_4(2,1)&V_4>=threshold_white_4(3,2)&V_4<=threshold_white_4(3,1);
+else
+white_4=S_4>=threshold_white_4(2,2)&S_4<=threshold_white_4(2,1)&V_4>=threshold_white_4(3,2)&V_4<=threshold_white_4(3,1)&(H_4>=(1+(threshold_white_4(1,1)-threshold_white_4(1,2)))|H_4<=threshold_white_4(1,1));
+end
+hold on;
+MF_coord=z_4;
+for i_4=1:18
+    hold on ,plot(MF_coord(i_4,1),MF_coord(i_4,2),'r+');
+    if green_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='g';      
+    elseif yellow_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='y';
+    elseif red_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='r'; 
+          a(i_4,1)=MF_coord(i_4,2);
+          a(i_4,2)=MF_coord(i_4,1);
+    elseif white_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='w';  
+     elseif blue_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='b';  
+      elseif orange_4(MF_coord(i_4,2),MF_coord(i_4,1)) ==1
+         output_color_4(1,i_4)='o';   
+    end  
+   
+end   
+    output_color_4 %%绿
+    output_color=[output_color_3,output_color_1,output_color_4,output_color_2];
+%     cube=output_color;
+%     str=py.rubik_solver.utils.solve(cube, 'Kociemba');
+%         dizhi='D:\';
+%         fid=fopen([dizhi,'cube.txt'],'w');
+%         fprintf(fid,char(cube));
