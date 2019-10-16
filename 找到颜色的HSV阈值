@@ -1,0 +1,433 @@
+%HSV阈值调节函数
+%Author : Ruan
+
+function hsv_threshold_tuner()
+
+%read images
+img1 = imread('D:\项目设计\安希旭的个人设计\魔方机器人\魔方机器人代码\测试6.jpg');
+img2 = imread('D:\项目设计\安希旭的个人设计\魔方机器人\魔方机器人代码\测试9.jpg');
+
+%各个颜色的HSV阈值 此为存放格式[Hmax Hwidth;Smax Smin;Lmax Lmin]
+% threshold_red = [0.012 0.066;1.000 0.800;1.000 0.388];
+% threshold_orange = [0.047 0.035;0.571 0.407;1.000 0.673]; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+% threshold_yellow = [0.195 0.064;0.582 0.159;0.957 0.328];
+% threshold_green = [0.415 0.173;0.907 0.183;0.900 0.298];
+% threshold_blue = [0.739 0.144;0.983 0.507;0.954 0.240];
+% threshold_white = [0.073 0.329;0.168 0.000;0.946 0.400];
+
+
+% threshold_red = [0.054 0.341;1.000 0.872;1.000 0.388];
+% threshold_orange = [0.034 0.291;0.793 0.142;1.000 0.673] ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+% threshold_yellow = [0.195 0.080;0.582 0.021;0.957 0.328];
+% threshold_green = [0.415 0.173;0.907 0.183;0.900 0.298];
+% threshold_blue = [0.739 0.144;0.983 0.507;0.954 0.240];
+% % threshold_white = [0.073 0.329;0.168 0.000;0.946 0.400];
+% threshold_white =[0.881 0.329;0.168 0.000;0.983 0.360];
+
+% threshold_red = [0.054 0.341;1.000 0.872;1.000 0.388]; 
+% 
+% threshold_orange = [0.034 0.291;0.793 0.142;1.000 0.673] ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+% %threshold_yellow = [0.195 0.080;0.582 0.021;0.957 0.328];
+% threshold_green = [0.502 0.173;0.943 0.183;0.960 0.298];
+% threshold_blue = [0.739 0.144;1.000 0.508;1.000 0.140];
+% threshold_white = [0.914 0.329;0.02 0.000;1.000 0.360];
+% % threshold_yellow = [0.195 0.080;0.582 0.021;0.957 0.328] ;
+% threshold_yellow = [0.261 0.080;0.582 0.021;1.000 0.328] ;
+
+
+
+%% 红橘混3
+%     threshold_red =[0.040 0.379;1.000 0.541;1.000 0.388]  ; %[0.054 0.341;1.000 0.766;1.000 0.388] 大于0.661或者小于0.04
+% 
+%     threshold_orange =  [0.176 0.285;0.881 0.471;1.000 0.673]  ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 大于0.8910 或者小于0.176
+%     %threshold_yellow = [0.195 0.080;0.582 0.021;0.957 0.328];
+%     threshold_green= [0.502 0.173;0.943 0.183;1.000 0.298] ;
+%     threshold_blue = [0.739 0.176;1.000 0.508;1.000 0.140] ;
+%     threshold_white = [0.000 0.956;0.061 0.000;1.000 0.360] ;
+% 
+%     threshold_yellow= [0.261 0.080;0.165 0.000;1.000 0.328]; 
+%% 红橘混2
+
+%黄色色块
+%% 加灯罩，晚上，UP摄像头
+% threshold_red =[0.033 0.083;1.000 0.617;1.000 0.094]; %[0.057 0.077;1.000 0.749;1.000 0.094] ;
+% threshold_orange = [0.262 0.299;0.646 0.408;1.000 0.582]; % [0.398 0.431;0.962 0.368;1.000 0.582] ;
+% threshold_green = [0.502 0.173;1.000 0.183;1.000 0.298];
+% threshold_blue = [0.735 0.154;1.000 0.255;1.000 0.140];
+% threshold_white =[0.998 0.575;0.201 0.000;1.000 0.360]; 
+% threshold_yellow = [0.425 0.169;0.582 0.021;1.000 0.328] ;
+
+%% 扫白 加灯罩 晚上
+% threshold_red =[0.057 0.077;1.000 0.711;1.000 0.094] ;
+% threshold_orange =  [0.138 0.425;0.720 0.42900;1.000 0.582] ;
+% threshold_green = [0.502 0.2020;1.000 0.183;0.98 0.298];
+% threshold_blue =[0.739 0.176;1.000 0.192;1.000 0.140]  ;
+% threshold_white =[0.000 0.8500;0.093 0.000;1.000 0.360]  ;
+% threshold_yellow = [0.277 0.149;0.582 0.021;1.000 0.368];
+%% 扫黄 加灯罩 晚上
+threshold_red =[0.054 0.084;1.000 0.508;1.000 0.094] ;
+threshold_orange =  [0.385 0.368;0.948 0.358;1.000 0.673] ; %% [0.047 0.035;0.820 0.389;1.000 0.673] 
+threshold_green = [0.502 0.173;0.943 0.183;1.000 0.298];
+threshold_blue = [0.739 0.154;1.000 0.255;1.000 0.140];
+threshold_white =[0.998 0.695;0.107 0.000;1.000 0.360];    % threshold_white = [1.000 0.462;0.168 0.000;1.000 0.360];
+threshold_yellow = [0.292 0.236;0.582 0.021;1.000 0.328];
+
+
+
+%当前使用的阈值和 图像来源
+threshold_current = [0 0;0 0;0 0];
+img_current = img1;
+
+%创建UI
+createUI();
+
+%getHSVregion(img1,threshold_green);
+
+    %显示RGB图像经过HSV筛选后的效果
+    function getHSVregion(imRgb,threshold_color)       
+        %阈值储存格式：[Hmax Hwidth;Smax Smin;Lmax Lmin]
+        imRgb = imresize(imRgb,0.5);
+        %转换RGB图像到HSV空间
+        imHsv = rgb2hsv(imRgb);
+
+        %判断h通道 因为红色跨0的上下所以特别处理
+        Hmax = threshold_color(1,1);
+        Hwidth = threshold_color(1,2);
+        if Hmax-Hwidth < 0  %如果范围跨越0
+            %先找出大于0部分的像素
+            h_over0 = ~im2bw(imHsv(:,:,1),Hmax);
+
+            %再找出小于0部分的像素
+            h_under0 = im2bw(imHsv(:,:,1),Hmax+1-Hwidth);
+            %两部分结合
+            Hregion = h_over0 | h_under0;
+
+            %show3Images(h_over0,h_under0,Hregion);
+        else
+            %算出小于最大值的范围
+            h_big = ~im2bw(imHsv(:,:,1),Hmax);
+
+            %算出大于最小值的范围
+            h_small = im2bw(imHsv(:,:,1),Hmax-Hwidth);
+            %相与算出交叉部分
+            Hregion = h_big&h_small;
+
+            %show3Images(h_big,h_small,Hregion);
+
+        end
+
+        %判断s通道
+        Smax = threshold_color(2,1);
+        Smin = threshold_color(2,2);
+        Sregion  = chGetRegion(imHsv(:,:,2),Smax,Smin);
+
+        %判断v通道
+        Vmax = threshold_color(3,1);
+        Vmin = threshold_color(3,2);
+        Vregion = chGetRegion(imHsv(:,:,3),Vmax,Vmin);
+        
+        %合并三个通道结果
+        HSVregion = Hregion&Sregion&Vregion;
+        
+        %显示每个通道以及合并后效果
+        show4Images(Hregion,Sregion,Vregion,HSVregion);
+
+        %将结果重叠在原图上查看效果
+%         uint88 = uint8(~HSVregion);
+%         rgbmask(:,:,1) = uint88;
+%         rgbmask(:,:,2) = uint88;
+%         rgbmask(:,:,3) = uint88;
+%         rgbmask = rgbmask.*200;
+        %figure;
+        %imshow(imadd(imRgb,rgbmask));
+    end
+    %获得S或V单通道阈值内区域
+    function region_back = chGetRegion(oneImgCh,thMax,thMin)
+        ch_big = ~im2bw(oneImgCh,thMax);
+        ch_small = im2bw(oneImgCh,thMin);
+        region_back = ch_big&ch_small;
+        
+        %show3Images(7,ch_big,ch_small,region_back);
+        
+    end
+    function show3Images(img1,img2,img3)
+        figure;
+        subplot(1,3,1);
+        imshow(img1);
+        subplot(1,3,2);
+        imshow(img2);
+        subplot(1,3,3);
+        imshow(img3);
+        
+    end
+    function show4Images(img1,img2,img3,img4)
+        %figure;
+        subplot(2,2,1);
+        imshow(img1);
+        title('H色相');
+        subplot(2,2,2);
+        imshow(img2);
+        title('S饱和度');
+        subplot(2,2,3);
+        imshow(img3);
+        title('V亮度')
+        subplot(2,2,4);
+        imshow(img4);
+        title('HSV过滤结果');
+        
+    end
+    function createUI()
+    
+    %新建两个figure
+    f2 = figure(2);
+    f2.Name = '图像预览';
+    f2.Position = [650 100 700 500];
+    f = figure(1);
+    f.Visible = 'off';
+    f.Color = [0.68 0.92 1];
+    f.Name = '调节面板';
+    f.Position = [30 100 600 500];
+    
+    %UI元素基准位置
+    uibottomX = 120;
+    uibottomY = 90;
+    uiwidthX = 450;
+    uiwidthY = 20;
+
+
+
+    createSliders();
+    createTxts();
+    popup = uicontrol('Style', 'popup',...
+           'String', {'red','orange','yellow','green','blue','white'},...
+           'Position', [20 340 100 50],...
+           'Callback', @popupcallback); 
+    popup2 = uicontrol('Style', 'popup',...
+           'String', {'img1','img2','img3','img4','img5','img6'},...
+           'Position', [400 340 100 50],...
+           'Callback', @popupcallback2); 
+    btn = uicontrol('Style', 'pushbutton', 'String', 'save',...
+            'Position', [150 368 50 20],...
+            'Callback', @btncallback); 
+    %声明UI元素句柄
+    sld1;
+    sld2;
+    sld3;
+    sld4;
+    sld5;
+    sld6;
+
+    txt1;
+    txt2;
+    txt3;
+    txt4;
+    txt5;
+    txt6;
+    txt7;
+    txt8;
+    txt9;
+    txt10;
+    txt11;
+    txt12;
+
+    f.Visible = 'on';   %figure1开启显示
+        %创建滑条
+        function createSliders
+        sld6 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY uiwidthX uiwidthY],...
+                'Callback', @slidercallback6,'Sliderstep',[0.002 0.002]);
+        sld5 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY+30 uiwidthX uiwidthY],...
+                'Callback', @slidercallback5,'Sliderstep',[0.002 0.002]);
+        sld4 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY+80 uiwidthX uiwidthY],...
+                'Callback', @slidercallback4,'Sliderstep',[0.002 0.002]);
+        sld3 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY+110 uiwidthX uiwidthY],...
+                'Callback', @slidercallback3,'Sliderstep',[0.002 0.002]);
+        sld2 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY+160 uiwidthX uiwidthY],...
+                'Callback', @slidercallback2,'Sliderstep',[0.002 0.002]);   
+        sld1 = uicontrol('Style', 'slider',...
+                'Min',0,'Max',1,'Value',0,...
+                'Position', [uibottomX uibottomY+190 uiwidthX uiwidthY],...
+                'Callback', @slidercallback1,'Sliderstep',[0.002 0.002]);         
+        end
+
+        %创建文本
+        function createTxts
+        txt1 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY+190 50 20],...
+            'String','Hmax');
+        txt2 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY+160 50 20],...
+            'String','Hwidth','Foregroundcolor','red');
+        txt3 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY+110 50 20],...
+            'String','Smax');
+        txt4 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY+80 50 20],...
+            'String','Smin');
+        txt5 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY+30 50 20],...
+            'String','Vmax');
+        txt6 = uicontrol('Style','text',...
+            'Position',[uibottomX-100 uibottomY 50 20],...
+            'String','Vmin');
+
+        txt7 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY+190 50 20],...
+            'String','0');
+        txt8 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY+160 50 20],...
+            'String','0');
+        txt9 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY+110 50 20],...
+            'String','0');
+        txt10 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY+80 50 20],...
+            'String','0');
+        txt11 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY+30 50 20],...
+            'String','0');
+        txt12 = uicontrol('Style','text',...
+            'Position',[uibottomX-50 uibottomY 50 20],...
+            'String','0');
+        end
+
+
+        %滑条回调函数
+        function slidercallback1(source,callbackdata)
+        threshold_current(1,1) = source.Value;
+        set(txt7,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+       
+        end
+        function slidercallback2(source,callbackdata)
+        threshold_current(1,2) = source.Value;
+        set(txt8,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+
+        end
+        function slidercallback3(source,callbackdata)
+        threshold_current(2,1) = source.Value;
+        set(txt9,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+
+        end
+        function slidercallback4(source,callbackdata)
+        threshold_current(2,2) = source.Value;
+        set(txt10,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+
+        end
+        function slidercallback5(source,callbackdata)
+        threshold_current(3,1) = source.Value;
+        set(txt11,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+
+        end
+        function slidercallback6(source,callbackdata)
+        threshold_current(3,2) = source.Value;
+        set(txt12,'String',source.Value);
+        figure(2);
+        getHSVregion(img_current,threshold_current);
+
+        end
+        %下拉菜单回调函数
+        function popupcallback(source,callbackdata)
+            switch source.Value
+                case 1
+                    threshold_current = threshold_red;
+                    refreshNumbers();
+                case 2
+                    threshold_current = threshold_orange;
+                    refreshNumbers();
+                case 3
+                    threshold_current = threshold_yellow;
+                    refreshNumbers();
+                case 4
+                    threshold_current = threshold_green;
+                    refreshNumbers();
+                case 5
+                    threshold_current = threshold_blue;
+                    refreshNumbers();
+                case 6
+                    threshold_current = threshold_white;
+                    refreshNumbers();
+            end
+
+
+        end
+        function popupcallback2(source,callbackdata)
+            switch source.Value
+                case 1
+                    img_current = img1;
+                case 2
+                    img_current = img2;
+                case 3
+                    img_current = img3;
+                case 4
+                    img_current = img4;
+                case 5
+                    img_current = img5;
+                case 6
+                    img_current = img6;
+            end
+            figure(2);
+            getHSVregion(img_current,threshold_current);
+
+
+        end
+        %按钮回调函数
+        function btncallback(source,callbackdata)
+            currentColor = get(popup,'Value');
+            strings = get(popup,'String');
+            string = strings(currentColor);
+            disp(string);
+            str = sprintf(' [%.3f %.3f;%.3f %.3f;%.3f %.3f] ',...
+                threshold_current(1,1),threshold_current(1,2),...
+                threshold_current(2,1),threshold_current(2,2),...
+                threshold_current(3,1),threshold_current(3,2));
+            disp(str);
+
+
+        end
+
+        %刷新显示的数字和slider方块位置
+        function refreshNumbers
+            set(txt7,'String',threshold_current(1,1));
+            set(txt8,'String',threshold_current(1,2));
+            set(txt9,'String',threshold_current(2,1));
+            set(txt10,'String',threshold_current(2,2));
+            set(txt11,'String',threshold_current(3,1));
+            set(txt12,'String',threshold_current(3,2));
+
+            sld1.Value = threshold_current(1,1);
+            sld2.Value = threshold_current(1,2);
+            sld3.Value = threshold_current(2,1);
+            sld4.Value = threshold_current(2,2);
+            sld5.Value = threshold_current(3,1);
+            sld6.Value = threshold_current(3,2);
+
+        end
+
+    end
+
+end
+
+
+
+
+
+
